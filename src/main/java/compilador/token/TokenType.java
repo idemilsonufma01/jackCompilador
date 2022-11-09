@@ -8,6 +8,83 @@ package compilador.token;
  *
  * @author RAIMUNDA
  */
-public class TokenType {
-    
+import java.util.Arrays;
+
+public enum TokenType {
+
+    //simbolos
+    PLUS,
+    MINUS,
+    EQ,
+    AST,
+    SLASH,
+    AND,
+    OR,
+    NOT,
+    GT,
+    LT,
+    PONT,
+    COMMA,
+    SEMICOLON,
+    LPAREN,
+    RPAREN,
+    LBRACE,
+    RBRACE,
+    LBRACKET,
+    RBRACKET,
+
+
+
+
+     // Literals.
+     NUMBER,
+     STRING,
+     IDENT,
+
+ 
+     // keywords
+     CLASS,
+     CONSTRUCTOR,
+     FUNCTION,
+     METHOD,
+     FIELD,
+     STATIC,
+     VAR,
+     INT,
+     CHAR,
+     BOOLEAN,
+     VOID,
+     TRUE,
+     FALSE,
+     NULL,
+     THIS,
+     LET,
+     DO,
+     IF,
+     ELSE,
+     WHILE,
+     RETURN,
+
+
+     
+     EOF,
+
+     ILLEGAL;
+     
+     private TokenType(){
+         
+     }
+     
+     private TokenType(String value){
+         this.value = value;
+     }
+     
+     public String value;
+     
+     public static TokenType Value(String value){
+         return Arrays.stream(TokenType.values())
+                 .filter(symbolType -> symbolType.value != null && symbolType.value.equals(value))
+                 .findFirst()
+                 .orElse(null);
+     }
 }

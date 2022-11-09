@@ -5,13 +5,24 @@
 
 package compiladores.jackcompilador;
 
+import compilador.token.Token;
+import static compilador.token.TokenType.EOF;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+
 /**
  *
  * @author RAIMUNDA
  */
-public class JackCompilador {
+public class App {
 
-    public static void main(String[] args) {
-        System.out.println("Hello World!");
-    }
+     public static void main(String[] args) {
+        
+        String input = "45 + do - \"ola\" laranja 876";
+        Scanner sc = new Scanner(input.getBytes());
+        for (Token tk = sc.nextToken(); tk.type != EOF; tk = sc.nextToken()) {
+            System.out.println(tk);
+        }
+    }  
 }
