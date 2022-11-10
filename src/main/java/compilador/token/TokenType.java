@@ -23,7 +23,7 @@ public enum TokenType {
     NOT,
     GT,
     LT,
-    PONT,
+    DOT,
     COMMA,
     SEMICOLON,
     LPAREN,
