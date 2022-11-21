@@ -34,28 +34,23 @@ public class App {
     
     public static void main( String[] args )  {
         String input = """
-               // This file is part of www.nand2tetris.org
-               // and the book "The Elements of Computing Systems"
-               // by Nisan and Schocken, MIT Press.
-               // File name: projects/10/ExpressionLessSquare/Main.jack
-               
-               /** Expressionless version of projects/10/Square/Main.jack. */
-               
-               class Main {
-                   static boolean test;    // Added for testing -- there is no static keyword
-                                           // in the Square files.
-               
-                   function void main() {
-                       var SquareGame game;
-                       let game = game;
-                       do game.run();
-                       do game.dispose();
-                       return;
-                   }
-               
-                   
-               }
-               
+                // This file is part of www.nand2tetris.org
+                // and the book "The Elements of Computing Systems"
+                // by Nisan and Schocken, MIT Press.
+                // File name: projects/10/Square/Main.jack
+                
+                // (derived from projects/09/Square/Main.jack, with testing additions)
+                
+                /** Initializes a new Square Dance game and starts running it. */
+                class Main {
+                    static boolean test;    // Added for testing -- there is no static keyword
+                                            // in the Square files.
+                    function void main() {
+                      var SquareGame game;
+                      let game = SquareGame.new();
+                      
+                }
+                
                            
                 """;
         Parser p = new Parser(input.getBytes());

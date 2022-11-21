@@ -3,30 +3,30 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package compiladores.jackcompilador;
-
+import java.io.EOFException;
 import compilador.token.Token;
 import compilador.token.TokenType;
-import static compilador.token.TokenType.NUMBER;
+import static compilador.token.TokenType.*;
 import java.nio.charset.StandardCharsets;
+
 
 /**
  *
  * @author RAIMUNDA
  */
 public class Scanner {
+
     private byte[] input;
     private int current;
     private int start;
 
-   
-    public Scanner (byte[ ] input) {
+
+    public Scanner (byte[] input) {
         this.input = input;
         current = 0;
         start = 0;
     }
-
-        
-//verificando Tokens
+    // + - numeros (1, 12, 678)
     public Token nextToken () {
 
         skipWhitespace();
@@ -35,29 +35,20 @@ public class Scanner {
         char ch = peek();
 
         if (Character.isDigit(ch)) {
-             return number();
+            return number();
         }
 
         if (Character.isLetter(ch)) {
             return identifier();
         }
 
+
+
         switch (ch) {
 
-
-            case '+':
-                advance();
-                return new Token (TokenType.PLUS,"+");
-            case '-':
-                advance();
-                return new Token (TokenType.MINUS,"-");
-
-            case '=':
-                advance();
-                return new Token(TokenType.EQ, "=");
-            case '*':
-                advance();
-                return new Token(TokenType.AST, "*");
+        
+            case '"':
+                return string();
 
             case '/':
                 if (peekNext() == '/') {
@@ -72,73 +63,77 @@ public class Scanner {
                     return new Token (TokenType.SLASH,"/");
                 }
 
+            case '+':
+                advance();
+                return new Token (TokenType.PLUS,"+");
+            case '-':
+                advance();
+                return new Token (TokenType.MINUS,"-"); 
+            case '*':
+                advance();
+                return new Token (TokenType.AST,"*"); 
+            case '.':
+                advance();
+                return new Token (TokenType.DOT,"."); 
             case '&':
                 advance();
-                return new Token(TokenType.AND, "&");
-
+                return new Token (TokenType.AND,"&"); 
             case '|':
                 advance();
-                return new Token(TokenType.OR, "|");
-
+                return new Token (TokenType.OR,"|"); 
             case '~':
                 advance();
-                return new Token(TokenType.NOT, "~");
+                return new Token (TokenType.NOT,"~"); 
 
-            case '<':
-                advance();
-                return new Token(TokenType.LT, "<");
 
             case '>':
                 advance();
-                return new Token(TokenType.GT, ">");
-            
-            case '.':
+                return new Token (TokenType.GT,">"); 
+            case '<':
                 advance();
-                return new Token(TokenType.DO, ".");
-
-            case ',':
+                return new Token (TokenType.LT,"<"); 
+            case '=':
                 advance();
-                return new Token(TokenType.COMMA, ",");
-
-            case ';':
-                advance();
-                return new Token(TokenType.SEMICOLON, ";");
+                return new Token (TokenType.EQ,"="); 
 
             case '(':
                 advance();
-                return new Token(TokenType.LPAREN, "(");
-
+                return new Token (TokenType.LPAREN,"("); 
             case ')':
                 advance();
-                return new Token(TokenType.RPAREN, ")");
-
+                return new Token (TokenType.RPAREN,")"); 
             case '{':
                 advance();
-                return new Token(TokenType.LBRACE, "{");
-            
+                return new Token (TokenType.LBRACE,"{"); 
             case '}':
                 advance();
-                return new Token(TokenType.RBRACE, "}");
-
+                return new Token (TokenType.RBRACE,"}"); 
             case '[':
                 advance();
-                return new Token(TokenType.LBRACKET, "[");
+                return new Token (TokenType.LBRACKET,"["); 
             case ']':
                 advance();
-                return new Token(TokenType.RBRACKET, "]");
-            
-            case '"':
-                return string();
-            
-            case 0:
-                return new Token (TokenType.EOF,"EOF");
-            default:
+                return new Token (TokenType.RBRACKET,"]"); 
+            case ';':
                 advance();
+                return new Token (TokenType.SEMICOLON,";"); 
+            case ',':
+                advance();
+                return new Token (TokenType.COMMA,","); 
+
+            case 0:
+                return new Token(TokenType.EOF, "EOF");  
+            default:
+                advance(); 
                 return new Token(TokenType.ILLEGAL, Character.toString(ch));
         }
+
+
+      
+
     }
 
-//ignorar blocos de comentários
+
     private void skipBlockComments() {
         boolean endComment = false;
         advance();
@@ -154,7 +149,7 @@ public class Scanner {
          
             if (ch == '*') {
 
-               for (ch = peek(); ch == '*';  advance(), ch = peek());
+               for (ch = peek(); ch == '*';  advance(), ch = peek()) ;
 
              
                 if (ch == '/') {
@@ -166,7 +161,13 @@ public class Scanner {
         }
 
     }
-    //pulando espaço
+
+    
+    private void skipLineComments() {
+  
+        for (char ch = peek(); ch != '\n' && ch != 0;  advance(), ch = peek()) ;
+    }
+
     private void skipWhitespace() {
         char ch = peek();
         while (ch == ' ' || ch == '\r' || ch == '\t' || ch == '\n') {
@@ -175,29 +176,10 @@ public class Scanner {
         }
     }
 
-//pulando linha
-    private void skipLineComments() {
-  
-        for (char ch = peek(); ch != '\n' && ch != 0;  advance(), ch = peek()) ;
+    private boolean isAlphaNumeric(char ch) {
+        return Character.isLetter(ch) || Character.isDigit(ch);
     }
-//verificando se é identificador
-    private Token identifier() {
-        while (isAlphaNumeric(peek())) advance();
 
-        String id = new String(input, start, current-start, StandardCharsets.UTF_8)  ;
-        TokenType type = Token.keyword(id);
-        if (type == null) type = TokenType.IDENT;
-            return new Token(type, id);
-    }
-//verificando se é numero
-    private Token number() {
-        while (Character.isDigit(peek())) {
-            advance();
-        }
-            String num = new String(input, start, current-start, StandardCharsets.UTF_8)  ;
-            return new Token(NUMBER, num);
-    }
-//verificando se é string
     private Token string () {
         advance();
         start = current;
@@ -209,26 +191,42 @@ public class Scanner {
         advance();
         return token;
     }
-    //avançando
-    private void advance()  {
+
+    private Token identifier() {
+        while (isAlphaNumeric(peek()) ) {
+            advance();
+        }
+        String id = new String(input, start, current-start, StandardCharsets.UTF_8);
+        TokenType type = Token.keyword(id);
+        if (type == null) type = TokenType.IDENT;
+        Token token = new Token (type,id);
+        return token;
+    }
+
+    private Token number () {
+        while (Character.isDigit(peek())) {
+            advance();
+        }
+        String s = new String(input, start, current-start, StandardCharsets.UTF_8);
+        Token token = new Token (TokenType.NUMBER,s);
+        return token;
+    }
+
+    private void advance () {
         char ch = peek();
         if (ch != 0) {
             current++;
         }
     }
 
-    //verificando se é letra ou digitos
-    private boolean isAlphaNumeric(char c) {
-            return Character.isLetter(c) || Character.isDigit((c));
-      }
-    
-//verificando atual
-    private char peek() {
-         if (current < input.length)
-                return (char)input[current];
-         return 0;
+    private char peek () {
+         if ( current < input.length) {
+             return (char)input[current];
+         } else {
+             return 0;
+         }
     }
-//verificando o proximo
+
     private char peekNext () {
         int next = current + 1;
         if ( next  < input.length) {
@@ -238,4 +236,6 @@ public class Scanner {
         }
    }
 
+
+    
 }
