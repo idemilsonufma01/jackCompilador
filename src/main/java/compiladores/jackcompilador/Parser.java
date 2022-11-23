@@ -17,6 +17,7 @@ public class Parser {
     private Scanner scan;
     private Token currentToken;
     private Token peekToken;
+    
     private StringBuilder xmlOutput = new StringBuilder();
     
 
@@ -44,11 +45,11 @@ public class Parser {
         expectPeek(IDENT);
         expectPeek(LBRACE);
 
-        while (peekTokenIs(STATIC) || peekTokenIs(FIELD)) {
+        while (peekToken.type==FIELD || peekToken.type == STATIC) {
             parseClassVarDec();
         }
         //parseSubroutineDec();
-        while (peekTokenIs(FUNCTION) || peekTokenIs(CONSTRUCTOR) || peekTokenIs(METHOD)) {
+        while (peekTokenIs(FUNCTION )|| peekTokenIs(CONSTRUCTOR)|| peekTokenIs(METHOD)) {
             parseSubroutineDec();
         }
 
@@ -168,11 +169,13 @@ public class Parser {
         printNonTerminal("letStatement");
         expectPeek(LET);
         expectPeek(IDENT);
+        
         if (peekTokenIs(LBRACKET)) { // array
             expectPeek(LBRACKET);
             parseExpression();
             expectPeek(RBRACKET);
         }
+       
         expectPeek(EQ);
         parseExpression();
         expectPeek(SEMICOLON);
@@ -202,6 +205,7 @@ public class Parser {
         expectPeek(LBRACE);
         parseStatements();
         expectPeek(RBRACE);
+        
         if (peekTokenIs(ELSE))
         {
             expectPeek(ELSE);
@@ -209,6 +213,7 @@ public class Parser {
             parseStatements();
             expectPeek(RBRACE);
         }
+        
         printNonTerminal("/ifStatement");
     }
 //statement*
@@ -301,22 +306,12 @@ public class Parser {
         switch (peekToken.type) {
             case NUMBER:
                 expectPeek(NUMBER);
-                
                 break;
+                
             case STRING:
                 expectPeek(STRING);
-            
                 break;
-            case FALSE:
-            case NULL:
-            case TRUE:
-                expectPeek(FALSE, NULL, TRUE);
                 
-                break;
-            case THIS:
-                expectPeek(THIS);
-                
-                break;
             case IDENT:
                 expectPeek(IDENT);
                 
@@ -326,12 +321,19 @@ public class Parser {
                     if (peekTokenIs(LBRACKET)) { // array
                         expectPeek(LBRACKET);
                         parseExpression();
-
                         expectPeek(RBRACKET);
-
                     } 
                 }
+                break;  
+            case FALSE:
+            case NULL:
+            case TRUE:
+                expectPeek(FALSE, NULL, TRUE);
                 break;
+            case THIS:
+                expectPeek(THIS);
+                break;
+            
             case LPAREN:
                 expectPeek(LPAREN);
                 parseExpression();
@@ -339,13 +341,45 @@ public class Parser {
                 break;
             case MINUS:
             case NOT:
-                expectPeek(MINUS, NOT);
-                parseTerm();
-                break;
+              expectPeek(MINUS, NOT);
+              parseTerm();
+              break;
             default:
                 throw new Error("term expected");
         }
         printNonTerminal("/term");
+    }
+
+   
+    boolean peekTokenIs(TokenType type) {
+        return peekToken.type == type;
+    }
+
+    boolean currentTokenIs(TokenType type) {
+        return currentToken.type == type;
+    }
+
+     private void expectPeek(TokenType type) {
+        if (peekToken.type == type) {
+            nextToken();
+            xmlOutput.append(String.format("%s\r\n", currentToken.toString()));
+        } else {
+             throw new Error("Syntax error - expected " + type + " found " + peekToken.lexeme);
+            //throw new Error("Expected " + type.value);
+        }
+    }
+     
+    private void expectPeek(TokenType... types) {
+        for (TokenType type : types) {
+            if (peekToken.type == type) {
+                expectPeek(type);
+                return;
+            }
+        }
+
+        throw new Error("Syntax error");
+        //throw new Error( "Expected a statement");
+
     }
 
     // funções auxiliares
@@ -358,37 +392,6 @@ public class Parser {
         xmlOutput.append(String.format("<%s>\r\n", nterminal));
     }
 
-    boolean peekTokenIs(TokenType type) {
-        return peekToken.type == type;
-    }
-
-    boolean currentTokenIs(TokenType type) {
-        return currentToken.type == type;
-    }
-
-    private void expectPeek(TokenType... types) {
-        for (TokenType type : types) {
-            if (peekToken.type == type) {
-                expectPeek(type);
-                return;
-            }
-        }
-
-        // throw new Error("Syntax error");
-        throw new Error( "Expected a statement");
-
-    }
-
-    private void expectPeek(TokenType type) {
-        if (peekToken.type == type) {
-            nextToken();
-            xmlOutput.append(String.format("%s\r\n", currentToken.toString()));
-        } else {
-            // throw new Error("Syntax error - expected " + type + " found " +
-            // peekToken.type);
-            throw new Error("Expected " + type.value);
-        }
-    }
 
   
    

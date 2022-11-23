@@ -15,25 +15,27 @@ public enum TokenType {
     //simbolos
     PLUS,
     MINUS,
-    EQ,
     AST,
     SLASH,
+    
     AND,
     OR,
     NOT,
+    
     GT,
     LT,
+    EQ,
+    
     DOT,
     COMMA,
     SEMICOLON,
+    
     LPAREN,
     RPAREN,
     LBRACE,
     RBRACE,
     LBRACKET,
     RBRACKET,
-
-
 
 
      // Literals.
@@ -70,7 +72,7 @@ public enum TokenType {
      EOF,
 
      ILLEGAL;
-     
+     /*
      private TokenType(){
          
      }
@@ -87,5 +89,5 @@ public enum TokenType {
                  .findFirst()
                  .orElse(null);
      }
-
+*/
 }
