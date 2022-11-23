@@ -37,113 +37,63 @@ public class App {
                      // This file is part of www.nand2tetris.org
                        // and the book "The Elements of Computing Systems"
                        // by Nisan and Schocken, MIT Press.
-                       // File name: projects/10/Square/Square.jack
+                       // File name: projects/10/ExpressionLessSquare/SquareGame.jack
                        
-                       // (same as projects/09/Square/Square.jack)
+                       /** Expressionless version of projects/10/Square/SquareGame.jack. */
                        
-                       /** Implements a graphical square. */
-                       class Square {
+                       class SquareGame {
+                          field Square square; 
+                          field int direction; 
                        
-                          field int x, y; // screen location of the square's top-left corner
-                          field int size; // length of this square, in pixels
-                       
-                          /** Constructs a new square with a given location and size. */
-                          constructor Square new(int Ax, int Ay, int Asize) {
-                             let x = Ax;
-                             let y = Ay;
-                             let size = Asize;
-                             do draw();
-                             return this;
+                          constructor SquareGame new() {
+                             let square = square;
+                             let direction = direction;
+                             return square;
                           }
                        
-                          /** Disposes this square. */
                           method void dispose() {
-                             do Memory.deAlloc(this);
+                             do square.dispose();
+                             do Memory.deAlloc(square);
                              return;
                           }
                        
-                          /** Draws the square on the screen. */
-                          method void draw() {
-                             do Screen.setColor(true);
-                             do Screen.drawRectangle(x, y, x + size, y + size);
+                          method void moveSquare() {
+                             if (direction) { do square.moveUp(); }
+                             if (direction) { do square.moveDown(); }
+                             if (direction) { do square.moveLeft(); }
+                             if (direction) { do square.moveRight(); }
+                             do Sys.wait(direction);
                              return;
                           }
                        
-                          /** Erases the square from the screen. */
-                          method void erase() {
-                             do Screen.setColor(false);
-                             do Screen.drawRectangle(x, y, x + size, y + size);
-                             return;
-                          }
+                          method void run() {
+                             var char key;
+                             var boolean exit;
+                             
+                             let exit = key;
+                             while (exit) {
+                                while (key) {
+                                   let key = key;
+                                   do moveSquare();
+                                }
                        
-                           /** Increments the square size by 2 pixels. */
-                          method void incSize() {
-                             if (((y + size) < 254) & ((x + size) < 510)) {
-                                do erase();
-                                let size = size + 2;
-                                do draw();
+                                if (key) { let exit = exit; }
+                                if (key) { do square.decSize(); }
+                                if (key) { do square.incSize(); }
+                                if (key) { let direction = exit; }
+                                if (key) { let direction = key; }
+                                if (key) { let direction = square; }
+                                if (key) { let direction = direction; }
+                       
+                                while (key) {
+                                   let key = key;
+                                   do moveSquare();
+                                }
                              }
                              return;
-                          }
-                       
-                          /** Decrements the square size by 2 pixels. */
-                          method void decSize() {
-                             if (size > 2) {
-                                do erase();
-                                let size = size - 2;
-                                do draw();
-                             }
-                             return;
-                          }
-                       
-                          /** Moves the square up by 2 pixels. */
-                          method void moveUp() {
-                             if (y > 1) {
-                                do Screen.setColor(false);
-                                do Screen.drawRectangle(x, (y + size) - 1, x + size, y + size);
-                                let y = y - 2;
-                                do Screen.setColor(true);
-                                do Screen.drawRectangle(x, y, x + size, y + 1);
-                             }
-                             return;
-                          }
-                       
-                          /** Moves the square down by 2 pixels. */
-                          method void moveDown() {
-                             if ((y + size) < 254) {
-                                do Screen.setColor(false);
-                                do Screen.drawRectangle(x, y, x + size, y + 1);
-                                let y = y + 2;
-                                do Screen.setColor(true);
-                                do Screen.drawRectangle(x, (y + size) - 1, x + size, y + size);
-                             }
-                             return;
-                          }
-                       
-                          /** Moves the square left by 2 pixels. */
-                          method void moveLeft() {
-                             if (x > 1) {
-                                do Screen.setColor(false);
-                                do Screen.drawRectangle((x + size) - 1, y, x + size, y + size);
-                                let x = x - 2;
-                                do Screen.setColor(true);
-                                do Screen.drawRectangle(x, y, x + 1, y + size);
-                             }
-                             return;
-                          }
-                       
-                          /** Moves the square right by 2 pixels. */
-                          method void moveRight() {
-                             if ((x + size) < 510) {
-                                do Screen.setColor(false);
-                                do Screen.drawRectangle(x, y, x + 1, y + size);
-                                let x = x + 2;
-                                do Screen.setColor(true);
-                                do Screen.drawRectangle((x + size) - 1, y, x + size, y + size);
-                             }
-                             return;
-                          }
+                           }
                        }
+                       
                        
                            
                          
