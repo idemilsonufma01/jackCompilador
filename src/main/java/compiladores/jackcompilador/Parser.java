@@ -19,13 +19,25 @@ public class Parser {
     private Token peekToken;
     
     private StringBuilder xmlOutput = new StringBuilder();
-    
+    //******************************
+    private SymbolTable symbolTable;
+    private String className;
+    private int ifLabelNum;
+    private int whileLabelNum;
+    //***********************    
 
 
     public Parser(byte[] input) {
         scan = new Scanner(input);
-   
+        //**
+        symbolTable = new SymbolTable();
+        //**
         nextToken();
+        //***
+        ifLabelNum = 0;
+        whileLabelNum = 0;
+        //**
+
 
 
     }
@@ -43,6 +55,9 @@ public class Parser {
         printNonTerminal("class");
         expectPeek(CLASS);
         expectPeek(IDENT);
+        //**
+        className = currentToken.value();
+        //**
         expectPeek(LBRACE);
 
         while (peekToken.type==FIELD || peekToken.type == STATIC) {

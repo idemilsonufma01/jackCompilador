@@ -72,7 +72,7 @@ public enum TokenType {
      EOF,
 
      ILLEGAL;
-     /*
+     
      private TokenType(){
          
      }
@@ -89,5 +89,5 @@ public enum TokenType {
                  .findFirst()
                  .orElse(null);
      }
-*/
+
 }

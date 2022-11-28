@@ -55,6 +55,12 @@ public class Token {
         String symbols = "{}()[].,;+-*/&|<>=~";
         return symbols.indexOf(c) > -1;
     }
+    //***
+     public String value () {
+        return type.value;
+    }
+    //**
+
 
     static public TokenType keyword (String id) {
         return keywords.get(id);
