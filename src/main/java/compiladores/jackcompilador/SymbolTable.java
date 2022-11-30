@@ -36,7 +36,7 @@ public class SymbolTable {
         countVars.put(Kind.FIELD, 0);
         
     }
-    public void startSubRoutine(){
+    public void startSubroutine(){
         subroutineScope.clear();
         countVars.put(Kind.VAR,0);
         countVars.put(Kind.ARG,0);

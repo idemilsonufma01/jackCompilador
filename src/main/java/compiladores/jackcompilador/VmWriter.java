@@ -8,7 +8,7 @@ package compiladores.jackcompilador;
  *
  * @author RAIMUNDA
  */
-public class VmWrite {
+public class VmWriter {
     private StringBuilder vmOutput = new StringBuilder();
     
     //segmenetos
