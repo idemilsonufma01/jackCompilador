@@ -8,8 +8,8 @@ import compilador.token.Token;
 import compilador.token.TokenType;
 import static compilador.token.TokenType.*;
 import compiladores.jackcompilador.SymbolTable.Kind;
+import compiladores.jackcompilador.SymbolTable.Symbol;
 import compiladores.jackcompilador.VmWriter.Command;
-//import compiladores.jackcompilador.VmWrite.Segment;
 import compiladores.jackcompilador.VmWriter.Segment;
 
 /**
@@ -17,6 +17,8 @@ import compiladores.jackcompilador.VmWriter.Segment;
  * @author RAIMUNDA
  */
 public class Parser {
+    
+    
 
     private Scanner scan;
     private Token currentToken;
@@ -37,6 +39,7 @@ public class Parser {
         scan = new Scanner(input);
         //**
         symbolTable = new SymbolTable();
+        vmWriter = new VmWriter();
         //**
         nextToken();
         //***
@@ -83,7 +86,7 @@ public class Parser {
     // '.' subroutineName '(' expressionList ')
     void parseSubroutineCall() {
         //**
-        var numArg =0;
+        var numArg=0;
         var ident = currentToken.value();
         var simbol = symbolTable.resolve(ident);
         var functName =ident + ".";
@@ -108,7 +111,7 @@ public class Parser {
                 numArg = 1;
             }
             expectPeek(LPAREN);
-            numArg + = parseExpressionList();
+            numArg += parseExpressionList();
             
             expectPeek(RPAREN);
         }
@@ -130,7 +133,7 @@ public class Parser {
     void parseVarDec() {
         printNonTerminal("varDec");
         expectPeek(VAR);
-        SymbolTable.Kind kind = kind.VAR;
+        SymbolTable.Kind kind = Kind.VAR;
 
         // 'int' | 'char' | 'boolean' | className
         expectPeek(INT, CHAR, BOOLEAN, IDENT);
@@ -430,7 +433,7 @@ public class Parser {
         printNonTerminal("/returnStatement");
     }
 //(expression ( ',' expression)* )?
-    void parseExpressionList() {
+    int parseExpressionList() {
         printNonTerminal("expressionList");
         var numArg = 0;
         
@@ -448,7 +451,7 @@ public class Parser {
         }
 
         printNonTerminal("/expressionList");
-        
+        return numArg;
     }
     
     private boolean isOperator (TokenType type) {
@@ -460,8 +463,10 @@ public class Parser {
         printNonTerminal("expression");
         parseTerm();
         while (isOperator(peekToken.type)) {
+            var ope = peekToken.type;
             expectPeek(peekToken.type);
             parseTerm();
+             compileOperators(ope);
         }
         printNonTerminal("/expression");
     }
@@ -474,32 +479,52 @@ public class Parser {
         switch (peekToken.type) {
             case NUMBER:
                 expectPeek(NUMBER);
+                vmWriter.writePush(Segment.CONST, Integer.parseInt(currentToken.value()));
                 break;
                 
             case STRING:
                 expectPeek(STRING);
+                var strValue = currentToken.value();
+                vmWriter.writePush(Segment.CONST, strValue.length());
+                vmWriter.writeCall("String.new", 1);
+                for (int i = 0; i < strValue.length(); i++) {
+                    vmWriter.writePush(Segment.CONST, strValue.charAt(i));
+                    vmWriter.writeCall("String.appendChar", 2);
+                }
                 break;
                 
             case IDENT:
                 expectPeek(IDENT);
-                
+                Symbol s = symbolTable.resolve(currentToken.value());
                 if (peekTokenIs(LPAREN) || peekTokenIs(DOT)) {
                     parseSubroutineCall();
                 } else { // variavel comum ou array
                     if (peekTokenIs(LBRACKET)) { // array
                         expectPeek(LBRACKET);
                         parseExpression();
+                        vmWriter.writePush(kindSegment2(s.kind()), s.index());
+                        vmWriter.writeArithmetic(Command.ADD);
                         expectPeek(RBRACKET);
-                    } 
+                        vmWriter.writePop(Segment.POINTER, 1); // pop address pointer into pointer 1
+                        vmWriter.writePush(Segment.THAT, 0);   // push the value of the address pointer back onto stack
+
+                    }  else {
+                        vmWriter.writePush(kindSegment2(s.kind()), s.index());
+                    }
+
                 }
                 break;  
             case FALSE:
             case NULL:
             case TRUE:
                 expectPeek(FALSE, NULL, TRUE);
+                vmWriter.writePush(Segment.CONST, 0);
+                if (currentToken.type == TRUE)
+                    vmWriter.writeArithmetic(Command.NOT);
                 break;
             case THIS:
                 expectPeek(THIS);
+                vmWriter.writePush(Segment.POINTER, 0);
                 break;
             
             case LPAREN:
@@ -510,7 +535,14 @@ public class Parser {
             case MINUS:
             case NOT:
               expectPeek(MINUS, NOT);
+              var op = currentToken.type;
               parseTerm();
+              if (op == MINUS){
+                vmWriter.writeArithmetic(Command.NEG);
+              }
+              else{
+                vmWriter.writeArithmetic(Command.NOT);
+              }
               break;
             default:
                 throw new Error("term expected");
@@ -532,10 +564,22 @@ public class Parser {
             nextToken();
             xmlOutput.append(String.format("%s\r\n", currentToken.toString()));
         } else {
-             throw new Error("Syntax error - expected " + type + " found " + peekToken.lexeme);
-            //throw new Error("Expected " + type.value);
+             //throw new Error("Syntax error - expected " + type + " found " + peekToken.lexeme);
+            throw new Error("Expected " + type.value);
         }
     }
+     
+    void compileOperators(TokenType type) {
+        if (type == AST) {
+            vmWriter.writeCall("Math.multiply", 2);
+        } else if (type == SLASH) {
+            vmWriter.writeCall("Math.divide", 2);
+        } else {
+            vmWriter.writeArithmetic(typeOperator(type));
+        }
+
+    }
+    
      
     private void expectPeek(TokenType... types) {
         for (TokenType type : types) {
@@ -559,12 +603,40 @@ public class Parser {
     private void printNonTerminal(String nterminal) {
         xmlOutput.append(String.format("<%s>\r\n", nterminal));
     }
+    
+    
 
   private Segment kindSegment2(Kind kind){
-      return null;
+        if (kind == Kind.STATIC)
+            return Segment.STATIC;
+        if (kind == Kind.FIELD)
+            return Segment.THIS;
+        if (kind == Kind.VAR)
+            return Segment.LOCAL;
+        if (kind == Kind.ARG)
+            return Segment.ARG;
+        return null;
+
   }
 
-  
+  private Command typeOperator(TokenType type) {
+      if (type == PLUS)
+            return Command.ADD;
+        if (type == MINUS)
+            return Command.SUB;
+        if (type == LT)
+            return Command.LT;
+        if (type == GT)
+            return Command.GT;
+        if (type == EQ)
+            return Command.EQ;
+        if (type == AND)
+            return Command.AND;
+        if (type == OR)
+            return Command.OR;
+        return null;
+
+  }
    
 
    
