@@ -598,6 +598,11 @@ public class Parser {
     public String XMLOutput() {
         return xmlOutput.toString();
     }
+    
+     public String VMOutput() {
+        return vmWriter.vmOutput();
+    }
+
 
 
     private void printNonTerminal(String nterminal) {

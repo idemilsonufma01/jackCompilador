@@ -8,7 +8,10 @@ package compiladores.jackcompilador;
 //import static compilador.token.TokenType.*;
 //port static compilador.token.TokenType.EOF;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 /**
@@ -16,9 +19,30 @@ import java.nio.file.Files;
  * @author RAIMUNDA
  */
 public class App {
+    
+    
+    public static void saveFile(String fileName, String output) {
+  
+       
+        FileOutputStream outputStream;
+        try {
+            outputStream = new FileOutputStream(fileName);
+            byte[] strToBytes = output.getBytes();
+            outputStream.write(strToBytes);
+    
+            outputStream.close();
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 
-     private static String fromFile() {
-        File file = new File("Main.jack");
+
+    private static String fromFile(File file) {
+        //File file = new File("Main.jack");
 
         byte[] bytes;
         try {
@@ -33,75 +57,67 @@ public class App {
 
     
     public static void main( String[] args )  {
-        String input = """
-                     // This file is part of www.nand2tetris.org
-                       // and the book "The Elements of Computing Systems"
-                       // by Nisan and Schocken, MIT Press.
-                       // File name: projects/10/ExpressionLessSquare/SquareGame.jack
-                       
-                       /** Expressionless version of projects/10/Square/SquareGame.jack. */
-                       
-                       class SquareGame {
-                          field Square square; 
-                          field int direction; 
-                       
-                          constructor SquareGame new() {
-                             let square = square;
-                             let direction = direction;
-                             return square;
-                          }
-                       
-                          method void dispose() {
-                             do square.dispose();
-                             do Memory.deAlloc(square);
-                             return;
-                          }
-                       
-                          method void moveSquare() {
-                             if (direction) { do square.moveUp(); }
-                             if (direction) { do square.moveDown(); }
-                             if (direction) { do square.moveLeft(); }
-                             if (direction) { do square.moveRight(); }
-                             do Sys.wait(direction);
-                             return;
-                          }
-                       
-                          method void run() {
-                             var char key;
-                             var boolean exit;
-                             
-                             let exit = key;
-                             while (exit) {
-                                while (key) {
-                                   let key = key;
-                                   do moveSquare();
-                                }
-                       
-                                if (key) { let exit = exit; }
-                                if (key) { do square.decSize(); }
-                                if (key) { do square.incSize(); }
-                                if (key) { let direction = exit; }
-                                if (key) { let direction = key; }
-                                if (key) { let direction = square; }
-                                if (key) { let direction = direction; }
-                       
-                                while (key) {
-                                   let key = key;
-                                   do moveSquare();
-                                }
-                             }
-                             return;
-                           }
-                       }
-                       
-                       
-                           
-                         
-                """;
+        
+    /*
+        String input = """";
+                     
         Parser p = new Parser(input.getBytes());
         p.parser();
         System.out.println(p.XMLOutput());
         
       
     } 
+    */
+    if (args.length != 1) {
+            System.err.println("Please provide a single file path argument.");
+            System.exit(1);
+        }
+
+        File file = new File(args[0]);
+
+        if (!file.exists()) {
+            System.err.println("there is no file");
+            System.exit(1);
+        }
+
+        // we need to compile every file in the directory
+        if (file.isDirectory()) {
+            for (File f : file.listFiles()) {
+                if (f.isFile() && f.getName().endsWith(".jack")) {
+
+                    var inputFileName = f.getAbsolutePath();
+                    var pos = inputFileName.indexOf('.');
+                    var outputFileName = inputFileName.substring(0, pos) + ".vm";
+                    
+                    System.out.println("compiling " +  inputFileName);
+                    var input = fromFile(f);
+                    var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+                    parser.parser();
+                    var result = parser.VMOutput();
+                    saveFile(outputFileName, result);
+                }
+
+            }
+        // compilando arquivo
+        } else if (file.isFile()) {
+            if (!file.getName().endsWith(".jack"))  {
+                System.err.println("provide a filename that ends with .jack");
+                System.exit(1);
+            } else {
+                var inputFileName = file.getAbsolutePath();
+                var pos = inputFileName.indexOf('.');
+                var outputFileName = inputFileName.substring(0, pos) + ".vm";
+                
+                System.out.println("compiling " +  inputFileName);
+                var input = fromFile(file);
+                var parser = new Parser(input.getBytes(StandardCharsets.UTF_8));
+                parser.parser();
+                var result = parser.VMOutput();
+                saveFile(outputFileName, result);
+                
+            }
+        }
+    }
+
+
 }
