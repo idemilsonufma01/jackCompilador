@@ -10,9 +10,9 @@ package compiladores.jackcompilador;
  */
 public class VmWriter {
     private StringBuilder vmOutput = new StringBuilder();
-    
-    //segmenetos
-     enum Segment {
+
+    // segmenetos
+    enum Segment {
         CONST("constant"),
         ARG("argument"),
         LOCAL("local"),
@@ -21,16 +21,17 @@ public class VmWriter {
         THAT("that"),
         POINTER("pointer"),
         TEMP("temp");
-        
+
         private Segment(String value) {
             this.value = value;
         }
 
         public String value;
 
-     }
-     //comandos logicos e aritmeticos
-     enum Command {
+    }
+
+    // comandos logicos e aritmeticos
+    enum Command {
         ADD,
         SUB,
         NEG,
@@ -42,45 +43,45 @@ public class VmWriter {
         NOT
     };
 
-     
-    public String vmOutput(){
+    public String vmOutput() {
         return vmOutput.toString();
     }
-     
-    void writePop(Segment segment, int index){
-        vmOutput.append(String.format("pop "+segment.value + index + "\n"));
+
+    void writePop(Segment segment, int index) {
+        vmOutput.append(String.format("pop %s %d\n", segment.value, index));
     }
-    
+
     public void writePush(Segment segment, int index) {
-        vmOutput.append (String.format ("push %s %d\n", segment.value, index));
-    } 
-    
+        vmOutput.append(String.format("push %s %d\n", segment.value, index));
+    }
+
     public void writeArithmetic(Command command) {
-        vmOutput.append (String.format ("\n", command.name().toLowerCase()));
-    } 
+        vmOutput.append(String.format(" %s\n", command.name().toLowerCase()));
+        // vmOutput.append("add");
+    }
 
     public void writeLabel(String label) {
-        vmOutput.append (String.format ("label %s\n",label));
-    } 
+        vmOutput.append(String.format("label %s\n", label));
+    }
 
     public void writeGoto(String label) {
-        vmOutput.append (String.format ("goto %s\n",label));
+        vmOutput.append(String.format("goto %s\n", label));
     }
 
     public void writeIf(String label) {
-        vmOutput.append (String.format ("if-goto %s\n",label));
-    } 
+        vmOutput.append(String.format("if-goto %s\n", label));
+    }
 
     public void writeCall(String name, int nArgs) {
-        vmOutput.append (String.format ("call %s %d\n", name, nArgs));
-    } 
+        vmOutput.append(String.format("call %s %d\n", name, nArgs));
+    }
 
-    public void writeFunction(String name, int nLocals){ 
-        vmOutput.append (String.format ("function %s %d\n", name, nLocals));
-    } 
+    public void writeFunction(String name, int nLocals) {
+        vmOutput.append(String.format("function %s %d\n", name, nLocals));
+    }
 
-    public void writeReturn(){ 
-        vmOutput.append (String.format ("return\n"));
+    public void writeReturn() {
+        vmOutput.append(String.format("return\n"));
     }
 
 }
